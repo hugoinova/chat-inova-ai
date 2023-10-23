@@ -35,7 +35,7 @@
         chatDiv.innerHTML = ''; // Limpa o conteúdo para exibir todas as mensagens novamente
         data.messages.forEach((message) => {
           chatDiv.innerHTML += `<p><strong>${message.from}:</strong> ${message.body}</p>`;
-          // Se houver uma resposta, exiba-a
+          // Se houver uma resposta, exibe
           if (message.response) {
             chatDiv.innerHTML += `<p><strong>Resposta:</strong> ${message.response}</p>`;
           }
