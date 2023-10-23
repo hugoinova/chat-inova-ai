@@ -39,7 +39,7 @@ client.on('message', async (message) => {
       // Anexe a resposta ao objeto de mensagem
       messages.push({ from: "Chatbot", body: resposta });
 
-      // Enviar a mensagem e a resposta para o cliente WebSocket conectado
+      // Enviar a mensagem e a resposta para o cliente WS conectado
       wsInstance.getWss().clients.forEach((client) => {
         if (client.readyState === client.OPEN) {
           client.send(JSON.stringify({ from: message.from, body: message.body, response: resposta, messages: messages }));
@@ -62,7 +62,7 @@ app.ws('/', (ws, req) => {
   ws.send(JSON.stringify({ messages: messages }));
 
   ws.on('message', (message) => {
-    // Lide com mensagens WebSocket aqui
+    // Lidar com as mensagens WS aqui? ver depois...
   });
 });
 
