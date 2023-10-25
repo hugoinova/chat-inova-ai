@@ -10,41 +10,79 @@
     <div class="row">
       <div class="col-md-6 mx-auto">
         <div id="chat" class="border p-3"></div>
-        <div id="qrCodeContainer" class="text-center mt-3"></div> <!-- Elemento para exibir o QR Code -->
+        <div id="qrCodeContainer" class="text-center mt-3">
+          <img id="qrCode" src="" alt="QR Code">
+        </div>
       </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
   <script>
+    // Necessário colocar pelo back end um loading ou spinner??  lembrar de fazer isso depois se necessário
+    // Função para exibir o indicador de "loading"
+    function showLoading() {
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML += '<p><em>Carregando...</em></p>';
+    }
+
+    // Função para esconder o indicador de "loading"
+    function hideLoading() {
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML = chatDiv.innerHTML.replace('<p><em>Carregando...</em></p>', '');
+    }
+
     const ws = new WebSocket('ws://localhost:3000');
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       const chatDiv = document.getElementById('chat');
-      const qrCodeContainer = document.getElementById('qrCodeContainer'); // Referência ao elemento QR Code
+      const qrCodeContainer = document.getElementById('qrCodeContainer');
+      const qrCodeImg = document.getElementById('qrCode');
 
       if (data.qrCode) {
-        // Exiba o QR Code quando for recebido
-        const img = new Image();
-        img.src = "data:image/png;base64," + data.qrCode;
-        qrCodeContainer.innerHTML = '';
-        qrCodeContainer.appendChild(img);
+        qrCodeImg.src = data.qrCode;
       }
 
       if (data.messages) {
-        chatDiv.innerHTML = ''; // Limpa o conteúdo para exibir todas as mensagens novamente
+        chatDiv.innerHTML = '';
         data.messages.forEach((message) => {
           chatDiv.innerHTML += `<p><strong>${message.from}:</strong> ${message.body}</p>`;
-          // Se houver uma resposta, exibe
           if (message.response) {
-            chatDiv.innerHTML += `<p><strong>Resposta:</strong> ${message.response}</p>`;
+            showLoading(); // Exibe  "loading" antes de mostrar a resposta
+
+            // setTimeout para simular um atraso de carregamento
+            setTimeout(() => {
+              // Exiba apenas os primeiros 500 caracteres da resposta
+              const truncatedResponse = message.response.substring(0, 500);
+              chatDiv.innerHTML += `<p><strong>Resposta:</strong> ${truncatedResponse}`;
+              
+              // Adicione botão para exibir o restante da resposta
+              if (message.response.length > 500) {
+                const remainingResponse = message.response.substring(500);
+                chatDiv.innerHTML += `<button id="showMore" onclick="showRemainingResponse('${remainingResponse}')">Leia mais</button>`;
+              }
+
+              hideLoading(); // Esconde o  "loading" após mostrar a resposta
+            }, 1000); // Simula um atraso de 1 segundo
           }
         });
       } else {
-        // Trate as mensagens enviadas pelo usuário
         chatDiv.innerHTML += `<p><strong>${data.from}:</strong> ${data.body}</p>`;
       }
     };
+
+    // Função para mostrar o restante da resposta
+    function showRemainingResponse(remainingResponse) {
+      showLoading(); // Exibe o indicador de "loading" antes de mostrar o restante da resposta
+
+      // setTimeout para simular um atraso de carregamento
+      setTimeout(() => {
+        document.getElementById('chat').innerHTML += remainingResponse;
+        document.getElementById('showMore').style.display = 'none';
+        hideLoading(); // Esconde  loading após mostrar o restante da resposta
+      }, 1000); // Simula um atraso de 1 segundo
+    }
   </script>
 </body>
 </html>
+
